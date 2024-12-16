@@ -68,7 +68,25 @@ class ApplyATsVisitor extends PsiRecursiveElementVisitor {
         if (element instanceof PsiClass psiClass) {
             if (psiClass.getQualifiedName() != null) {
                 String className = ClassUtil.getJVMClassName(psiClass);
-                if (!inheritMethodATs && !ats.containsClassTarget(className)) {
+                boolean shouldBeSkipped = !ats.containsClassTarget(className);
+
+                // Classes may need changing that are not in the source at set.
+                // Check if any of this classe's parents are in the source at set first to potentially inherit their ATs.
+                if (shouldBeSkipped && this.inheritMethodATs) {
+                    for (
+                        PsiClass parentType = psiClass.getSuperClass();
+                        parentType != null;
+                        parentType = parentType.getSuperClass()
+                    ) {
+                        if (this.ats.containsClassTarget(ClassUtil.getJVMClassName(parentType))) {
+                            // Process class as we inherit method ATs and we found *some* AT.
+                            // Heuristic isn't perfect, but the alternative would be scanning *all* method targets for the parent owning type.
+                            shouldBeSkipped = false;
+                            break;
+                        }
+                    }
+                }
+                if (shouldBeSkipped) {
                     // Skip this class and its children, but not the inner classes
                     for (PsiClass innerClass : psiClass.getInnerClasses()) {
                         visitElement(innerClass);
