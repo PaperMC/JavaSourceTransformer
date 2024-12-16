@@ -25,6 +25,12 @@ public class AccessTransformersTransformer implements SourceTransformer {
     @CommandLine.Option(names = "--access-transformer-validation", description = "The level of validation to use for ats")
     public AccessTransformerValidation validation = AccessTransformerValidation.LOG;
 
+    @CommandLine.Option(
+        names = "--access-transformer-inherit-method",
+        description = "Whether or not access transformers on methods should be inherited from parent types"
+    )
+    public boolean inheritMethodAccessTransformers = false;
+
     private AccessTransformerFiles ats;
     private Map<Target, Transformation> pendingATs;
     private Logger logger;
@@ -64,7 +70,13 @@ public class AccessTransformersTransformer implements SourceTransformer {
 
     @Override
     public void visitFile(PsiFile psiFile, Replacements replacements) {
-        var visitor = new ApplyATsVisitor(ats, replacements, pendingATs, logger);
+        var visitor = new ApplyATsVisitor(
+            ats,
+            replacements,
+            pendingATs,
+            this.inheritMethodAccessTransformers,
+            logger
+        );
         visitor.visitFile(psiFile);
         if (visitor.errored) {
             errored = true;

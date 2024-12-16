@@ -14,7 +14,6 @@ import com.intellij.psi.PsiRecordComponent;
 import com.intellij.psi.PsiRecursiveElementVisitor;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.ClassUtil;
-import com.intellij.psi.util.PsiClassUtil;
 import net.neoforged.accesstransformer.parser.AccessTransformerFiles;
 import net.neoforged.accesstransformer.parser.Target;
 import net.neoforged.accesstransformer.parser.Transformation;
@@ -46,12 +45,20 @@ class ApplyATsVisitor extends PsiRecursiveElementVisitor {
     private final AccessTransformerFiles ats;
     private final Replacements replacements;
     private final Map<Target, Transformation> pendingATs;
+    private final boolean inheritMethodATs;
     private final Logger logger;
     boolean errored = false;
 
-    public ApplyATsVisitor(AccessTransformerFiles ats, Replacements replacements, Map<Target, Transformation> pendingATs, Logger logger) {
+    public ApplyATsVisitor(
+        AccessTransformerFiles ats,
+        Replacements replacements,
+        Map<Target, Transformation> pendingATs,
+        boolean inheritMethodATs,
+        Logger logger
+    ) {
         this.ats = ats;
         this.replacements = replacements;
+        this.inheritMethodATs = inheritMethodATs;
         this.logger = logger;
         this.pendingATs = pendingATs;
     }
@@ -61,7 +68,7 @@ class ApplyATsVisitor extends PsiRecursiveElementVisitor {
         if (element instanceof PsiClass psiClass) {
             if (psiClass.getQualifiedName() != null) {
                 String className = ClassUtil.getJVMClassName(psiClass);
-                if (!ats.containsClassTarget(className)) {
+                if (!inheritMethodATs && !ats.containsClassTarget(className)) {
                     // Skip this class and its children, but not the inner classes
                     for (PsiClass innerClass : psiClass.getInnerClasses()) {
                         visitElement(innerClass);
@@ -106,10 +113,20 @@ class ApplyATsVisitor extends PsiRecursiveElementVisitor {
                 apply(pendingATs.remove(new Target.FieldTarget(className, field.getName())), field, cls);
             }
         } else if (element instanceof PsiMethod method) {
-            final var cls = method.getContainingClass();
-            if (cls != null && cls.getQualifiedName() != null) {
-                String className = ClassUtil.getJVMClassName(cls);
-                apply(pendingATs.remove(method(className, method)), method, cls);
+            final var owningType = method.getContainingClass();
+            if (owningType != null) {
+                // Locate transformation by searching owning type and its parents.
+                // Remove if this is AT is defined for its immediate owning type.
+                Transformation foundTransformation = this.pendingATs.remove(method(ClassUtil.getJVMClassName(owningType), method));
+                PsiClass definedForSuperType = owningType;
+                for (;
+                     this.inheritMethodATs && foundTransformation == null && definedForSuperType != null && definedForSuperType.getQualifiedName() != null;
+                     definedForSuperType = definedForSuperType.getSuperClass()
+                ) {
+                    foundTransformation = this.ats.getAccessTransformers().get(method(ClassUtil.getJVMClassName(definedForSuperType), method));
+                }
+
+                apply(foundTransformation, method, owningType);
             }
         }
 
