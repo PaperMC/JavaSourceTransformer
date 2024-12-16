@@ -1,10 +1,7 @@
-import net.neoforged.gradleutils.PomUtilsExtension
 
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow'
-    id 'maven-publish'
-    id 'net.neoforged.gradleutils'
 }
 
 group = 'net.neoforged.jst'
@@ -15,7 +12,6 @@ jar {
     }
 }
 
-gradleutils.setupSigning(project: project, signAllPublications: true)
 java {
     withSourcesJar()
     withJavadocJar()
@@ -95,9 +91,6 @@ publishing {
             pom {
                 name = 'JST CLI'
                 description = 'The JavaSourceTransformer CLI'
-                rootProject.pomUtils.githubRepo(it, 'JavaSourceTransformer')
-                rootProject.pomUtils.neoForgedDeveloper(it)
-                rootProject.pomUtils.license(it, PomUtilsExtension.License.LGPL_v2)
             }
         }
         // This publication only contains the shaded standalone jar
@@ -111,13 +104,7 @@ publishing {
             pom {
                 name = 'JST CLI bundle'
                 description = 'The JavaSourceTransformer CLI bundle, containing all builtin plugins shadowed'
-                rootProject.pomUtils.githubRepo(it, 'JavaSourceTransformer')
-                rootProject.pomUtils.neoForgedDeveloper(it)
-                rootProject.pomUtils.license(it, PomUtilsExtension.License.LGPL_v2)
             }
         }
-    }
-    repositories {
-        maven gradleutils.publishingMaven
     }
 }
