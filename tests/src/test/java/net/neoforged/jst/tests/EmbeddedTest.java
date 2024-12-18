@@ -297,6 +297,11 @@ public class EmbeddedTest {
         void testMethodsInheritance() throws Exception {
             runATTest("methods_inheritance", "--access-transformer-inherit-method");
         }
+
+        @Test
+        void testHiddenPrefixes() throws Exception {
+            runATTest("hidden_prefix", "--hidden-prefix=other");
+        }
     }
 
     @Nested
