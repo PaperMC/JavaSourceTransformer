@@ -102,6 +102,9 @@ Plugin - parchment
 Plugin - accesstransformers
       --access-transformer=<atFiles>
 
+      --access-transformer-inherit-method
+                           Whether or not access transformers on methods should be inherited from
+                             parent types
       --access-transformer-validation=<validation>
                            The level of validation to use for ats
       --enable-accesstransformers
