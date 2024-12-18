@@ -302,6 +302,11 @@ public class EmbeddedTest {
         void testHiddenPrefixes() throws Exception {
             runATTest("hidden_prefix", "--hidden-prefix=other");
         }
+
+        @Test
+        void testFolderClasspathEntries() throws Exception {
+            runATTest("folder_classpath_entry", "--classpath=" + testDataRoot.resolve("accesstransformer/folder_classpath_entry/deps"));
+        }
     }
 
     @Nested
