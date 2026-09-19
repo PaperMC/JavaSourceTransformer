@@ -35,5 +35,5 @@ jobs:
         if: endsWith(steps.get_version.outputs.version, '-SNAPSHOT')
         run: ./gradlew --init-script=/tmp/init.gradle publish --no-daemon --stacktrace
         env:
-          ORG_GRADLE_PROJECT_paperUsername: ${{ secrets.DEPLOY_USER }}
-          ORG_GRADLE_PROJECT_paperPassword: ${{ secrets.DEPLOY_PASS }}
+          ORG_GRADLE_PROJECT_paperUsername: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ORG_GRADLE_PROJECT_paperPassword: ${{ secrets.ARTIFACTORY_PASSWORD }}
