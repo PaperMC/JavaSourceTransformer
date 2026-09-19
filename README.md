@@ -132,3 +132,5 @@ Most of the heavy lifting is done by third party libraries such as
 the [IntelliJ platform](https://github.com/JetBrains/intellij-community)
 or [Mapping IO](https://github.com/FabricMC/mapping-io), which are under different licenses. Please refer to these
 projects and keep in mind that the standalone executable tool will contain code from these projects.
+
+<img src="https://papermc.io/assets/misc/namespace-oss-badge.svg?project=fill" alt="CI powered by namespace badge" />
